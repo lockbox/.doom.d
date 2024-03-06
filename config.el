@@ -90,6 +90,9 @@
 ;; CTRL+K removes entire line when at the beginning
 (setq kill-whole-line t)
 
+;; Move between windows plz
+(windmove-default-keybindings)
+
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
