@@ -96,13 +96,6 @@
 ;; Prevents some cases of Emacs flickering.
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
-;; Allow mixed fonts in a buffer. This is particularly useful for Org mode,
-;; so you can mix source and prose blocks in the same document. Also manually
-;; enable solaire-mode in Org mode as a workaround for font scaling not working properly.
-                                        ;(add-hook! 'org-mode-hook #'mixed-pitch-mode)
-                                        ;(add-hook! 'org-mode-hook #'solaire-mode)
-                                        ;(setq mixed-pitch-variable-pitch-cursor nil)
-
 ;; wordcount in markdown, gfm and org mode
 (setq doom-modeline-enable-word-count t)
 
@@ -166,12 +159,13 @@
             ((looking-at "\\s\)") (forward-char 1) (sp-backward-sexp))
             (t (self-insert-command (or arg 1))))))
   (map! "%" 'zz/goto-match-paren))
+
 ;;
 ;; org config, largely copied from <https://github.com/james-stoup/emacs-org-mode-tutorial>
 ;;
 (after! org
-  ;; Must do this so the agenda knows where to look for my files
-  (setq org-agenda-files '("~/d/notes"))
+  ;; The whole notes repo should get checked for agenda
+  (setq org-agenda-files lockbox/org-file-directories)
 
   ;; When a TODO is set to a done state, record a timestamp
   (setq org-log-done 'time)
@@ -198,23 +192,23 @@
   (setq org-capture-templates
         '(
           ("j" "Work Log Entry"
-           entry (file+datetree "~/d/notes/work-log.org")
+           entry (file+datetree "~/d/notes/work-log.org.gpg")
            "* %?"
            :empty-lines 0)
           ("n" "Note"
-           entry (file+headline "~/d/notes/notes.org" "Notes")
+           entry (file+headline "~/d/notes/notes.org.gpg" "Notes")
            "** %?"
            :empty-lines 0)
           ("g" "General To-Do"
-           entry (file+headline "~/d/notes/todo.org" "Tasks")
+           entry (file+headline "~/d/notes/todo.org.gpg" "Tasks")
            "* TODO [#B] %?\n:Created: %T\n "
            :empty-lines 0)
           ("c" "Code To-Do"
-           entry (file+headline "~/d/notes/todo.org" "Code Related Tasks")
+           entry (file+headline "~/d/notes/todo.org.gpg" "Code Related Tasks")
            "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
            :empty-lines 0)
           ("m" "Meeting"
-           entry (file+datetree "~/d/notes/meetings.org")
+           entry (file+datetree "~/d/notes/meetings.org.gpg")
            "* %? :meeting:%^g \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
            :tree-type week
            :clock-in t
@@ -222,3 +216,202 @@
            :empty-lines 0)
           ))
   )
+
+;;
+;; org gpg config
+;;
+(after! org
+  (org-crypt-use-before-save-magic)
+  (setq org-tags-exclude-from-inheritance '("crypt"))
+  ;; key to use for encryption
+  (setq org-crypt-key "lockbox@struct.foo"))
+
+;;
+;; setup org-roam
+;;
+;; Commentary: The structure of every org-roam / org is different for each user,
+;; and this represents the current iteration of my setup:
+;;
+;; ```
+;; <org-directory>/
+;;     - todo.org (misc TODO)
+;;     - projects/ (project captures + gathered content)
+;;     - daily/ (daily journal + task log)
+;;     - notes/ (generic captures / ideas / notes)
+;;     - comms/ (captures sourced from email/irc etc.)
+;; ```
+;;
+;; The actual use of which is cenetered around a few main tags:
+;; - work
+;; - idea
+;; - note
+;; - project
+;; - communication tags:
+;;     Should consist of 2 tags:
+;;       - medium (eg. irc)
+;;       - specific (eg. libera#gentoo)
+;;
+;;     This allows better sorting on accounts etc. Note that there should also
+;;     be information about the context of the capture in the details
+(after! org-roam
+  (setq org-roam-directory org-directory)
+  (setq org-roam-dailies-directory "~/d/notes/daily")
+
+  ;; shortcut to capture notes for today
+  (map!
+   "C-c n j" #'org-roam-dailies-capture-today
+   "C-c n n" #'org-roam-capture)
+
+  (setq org-roam-capture-templates
+        '(("n" "note" entry "** %?"
+           :target (file+head "notes/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+                              "#+TITLE: ${title}\n#+category: ${title}\n:note:%^G \n")
+           :unnarrowed t)
+          ("p" "project" plain (file "~/.doom.d/templates/project_template.org")
+           :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+                              "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
+           :unnarrowed t)
+          ("m" "meeting" entry "* %? :meeting:%^G \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
+           :target (file+head+olp "meetings.org.gpg" "#+title: Meetings\n#+category: meeting\n" ("Meetings"))
+           :clock-in t
+           :clock-resume t
+           :empty-lines 0
+           :unnarrowed t)
+          ("t" "todo" entry "* TODO [#B] %?\n:Created: %T\n "
+           :target (file+head+olp "todo.org.gpg" "#+title: TODO\n#+category: TODO\n" ("Tasks"))
+           :unnarrowed t)))
+  )
+
+;; make config group for variables
+(defgroup lockbox/notes-group nil
+  "lockbox notes config group."
+  :group 'emacs)
+
+;; Custom variable definition
+(defcustom lockbox/notes-directory (expand-file-name "~/d/notes")
+  "Path to lockbox notes directory."
+  :type 'directory
+  :group 'lockbox/notes-group
+  )
+
+;; Absolute path to the lockbox roam notes directory.
+(setq lockbox/notes-notes-dir (expand-file-name "notes" lockbox/notes-directory))
+;; Absolute path to the lockbox roam projects directory.
+(setq lockbox/notes-projects-dir (expand-file-name "projects" lockbox/notes-directory))
+;; Absolute path to the lockbox roam dailies directory.
+(setq lockbox/notes-daily-dir (expand-file-name "daily" lockbox/notes-directory))
+;; "Absolute path to the lockbox roam comms directory.
+(setq lockbox/notes-comms-dir (expand-file-name "comms" lockbox/notes-directory))
+
+;; List of paths to search for org content.
+;;
+;; We do not search daily logs, as things get copied *into* the dailies
+;; as they are completed
+(setq lockbox/org-file-directories
+      (mapcar
+       ;; foreach directory in the inner list, add the `*.org.gpg` wildcard path
+       (lambda (dir) (concat dir "/*.org.gpg"))
+       (list lockbox/notes-directory
+             lockbox/notes-notes-dir
+             lockbox/notes-projects-dir
+             lockbox/notes-comms-dir)))
+
+;; when new files are added, this hook should be invoked to update the global
+;; org-agenda file listing
+(defun lockbox/refresh-notes-org-gpg ()
+  ;; collect all files we care about before adding the list to org-agenda
+  (let ((collected-files  (mapcar (lambda (dir)(file-expand-wildcards dir)) lockbox/org-file-directories))
+
+        )
+    ;; add all the files we just globbed to org-agenda
+    (setq org-agenda-files (flatten-tree collected-files))))
+
+
+;; On every node capture, add the file to the agenda tracker if it was
+;; not already present
+(defun lockbox/org-roam-node-agenda-addition-hook ()
+  ;; Add file to the agenda list if the capture completed
+  (unless org-note-abort
+    ;; TODO: make sure we arent' adding dailies in here w the following
+    ;; nicer / simple code, so for now we roll w the brute force approach
+    (lockbox/refresh-notes-org-gpg)))
+                                        ;(with-current-buffer (org-capture-get :buffer)
+                                        ;  ;; only adds `buffer-file-name' to the list if it is not already
+                                        ;  ;; present in `org-agenda-files'
+                                        ;  (add-to-list 'org-agenda-files (buffer-file-name)))))
+
+;; register the hook
+(add-hook! 'org-capture-after-finalize-hook #'lockbox/org-roam-node-agenda-addition-hook)
+
+;;
+;; add encrypted files to agenda files
+;;
+(after! org-agenda
+  (setq org-agenda-include-diary t)
+
+  (lockbox/refresh-notes-org-gpg))
+
+
+;;
+;; Do not auto-save org / gpg things to disk
+;;
+(defun disable-auto-save-for-specific-files ()
+  (when (and buffer-file-name
+             (or (string-suffix-p ".org" buffer-file-name)
+                 (string-suffix-p ".gpg" buffer-file-name)))
+    ;; Disable auto-save
+    (auto-save-mode -1)))
+
+;; add hook to selectively auto-save
+(add-hook 'find-file-hook 'disable-auto-save-for-specific-files)
+
+;;
+;; Make cursor show up initally in org-agenda
+;;
+;; Commentary: The cursor does in fact show up, only after issuing a movement
+;; command in some cases, this is annoying.
+;;
+;; To overcome this we can use [advise](https://www.gnu.org/software/emacs/manual/html_node/elisp/Advising-Functions.html)
+;; to the offending code and set the cursor definition appropriately (ty
+;; @lawlist on SO).
+;;
+;; Related:
+;; - [Similar Stack Overflow question](https://emacs.stackexchange.com/questions/78420/use-keyboard-in-org-calendar)
+;; - [Offending commit](https://list.orgmode.org/87d36uip6p.fsf@gnu.org/)
+;; - [Offending code](https://github.com/emacs-mirror/emacs/blob/94ed2df02fa1841095041c8c26ad243052638e22/lisp/org/org.el#L13758)
+;;
+(defun my/fix-no-initial-org-agenda-cursor (orig-fun &rest args)
+  (when (equal (car args) '(setq cursor-type nil))
+    (setcar args '(setq cursor-type 'bar)))
+  (apply orig-fun args))
+
+(advice-add 'org-eval-in-calendar :around #'my/fix-no-initial-org-agenda-cursor)
+
+
+;; automatically copy completed tasks to daily log
+;; copied from https://systemcrafters.net/build-a-second-brain-in-emacs/5-org-roam-hacks/
+(defun my/org-roam-copy-todo-to-today ()
+  (interactive)
+  (let ((org-refile-keep t) ;; Set this to nil to delete the original!
+        (org-roam-dailies-capture-templates
+         '(("t" "tasks" entry "%?"
+            :if-new (file+head+olp "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>\n" ("Tasks")))))
+        (org-after-refile-insert-hook #'save-buffer)
+        today-file
+        pos)
+    (save-window-excursion
+      (org-roam-dailies--capture (current-time) t)
+      (setq today-file (buffer-file-name))
+      (setq pos (point)))
+
+    ;; Only refile if the target file is different than the current file
+    (unless (equal (file-truename today-file)
+                   (file-truename (buffer-file-name)))
+      (org-refile nil nil (list "Tasks" today-file nil pos)))))
+
+;; register the hook to copy task data to daily log when completed
+(after! org
+  (add-to-list 'org-after-todo-state-change-hook
+               (lambda ()
+                 (when (equal org-state "DONE")
+                   (my/org-roam-copy-todo-to-today)))))
