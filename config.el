@@ -33,13 +33,49 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 
+;; Notes config variables
+(defgroup lockbox/notes-group nil
+  "lockbox notes config group."
+  :group 'emacs)
+
+;; Global notes are stored here, including all org etc.
+(defcustom lockbox/notes-directory (expand-file-name "~/d/notes")
+  "Path to lockbox notes directory."
+  :type 'directory
+  :group 'lockbox/notes-group
+  )
+
+;; Absolute path to the lockbox roam notes directory.
+(setq lockbox/notes-notes-dir (expand-file-name "notes" lockbox/notes-directory))
+;; Absolute path to the lockbox roam projects directory.
+(setq lockbox/notes-projects-dir (expand-file-name "projects" lockbox/notes-directory))
+;; Absolute path to the lockbox roam dailies directory.
+(setq lockbox/notes-daily-dir (expand-file-name "daily" lockbox/notes-directory))
+;; "Absolute path to the lockbox roam comms directory.
+(setq lockbox/notes-comms-dir (expand-file-name "comms" lockbox/notes-directory))
+
+;; List of paths to search for org content.
+;;
+;; We do not search daily logs, as things get copied *into* the dailies
+;; as they are completed
+(setq lockbox/org-file-directories
+      (mapcar
+       ;; foreach directory in the inner list, add the `*.org.gpg` wildcard path
+       (lambda (dir) (concat dir "/*.org.gpg"))
+       (list lockbox/notes-directory
+             lockbox/notes-daily-dir
+             lockbox/notes-projects-dir
+             lockbox/notes-comms-dir)))
+
+
+
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/d/notes/")
+(setq org-directory lockbox/notes-directory)
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -254,8 +290,8 @@
 ;;     This allows better sorting on accounts etc. Note that there should also
 ;;     be information about the context of the capture in the details
 (after! org-roam
-  (setq org-roam-directory org-directory)
-  (setq org-roam-dailies-directory "~/d/notes/daily")
+  (setq org-roam-directory lockbox/notes-directory)
+  (setq org-roam-dailies-directory lockbox/notes-daily-dir)
 
   ;; shortcut to capture notes for today
   (map!
@@ -281,40 +317,6 @@
            :target (file+head+olp "todo.org.gpg" "#+title: TODO\n#+category: TODO\n" ("Tasks"))
            :unnarrowed t)))
   )
-
-;; make config group for variables
-(defgroup lockbox/notes-group nil
-  "lockbox notes config group."
-  :group 'emacs)
-
-;; Custom variable definition
-(defcustom lockbox/notes-directory (expand-file-name "~/d/notes")
-  "Path to lockbox notes directory."
-  :type 'directory
-  :group 'lockbox/notes-group
-  )
-
-;; Absolute path to the lockbox roam notes directory.
-(setq lockbox/notes-notes-dir (expand-file-name "notes" lockbox/notes-directory))
-;; Absolute path to the lockbox roam projects directory.
-(setq lockbox/notes-projects-dir (expand-file-name "projects" lockbox/notes-directory))
-;; Absolute path to the lockbox roam dailies directory.
-(setq lockbox/notes-daily-dir (expand-file-name "daily" lockbox/notes-directory))
-;; "Absolute path to the lockbox roam comms directory.
-(setq lockbox/notes-comms-dir (expand-file-name "comms" lockbox/notes-directory))
-
-;; List of paths to search for org content.
-;;
-;; We do not search daily logs, as things get copied *into* the dailies
-;; as they are completed
-(setq lockbox/org-file-directories
-      (mapcar
-       ;; foreach directory in the inner list, add the `*.org.gpg` wildcard path
-       (lambda (dir) (concat dir "/*.org.gpg"))
-       (list lockbox/notes-directory
-             lockbox/notes-notes-dir
-             lockbox/notes-projects-dir
-             lockbox/notes-comms-dir)))
 
 ;; when new files are added, this hook should be invoked to update the global
 ;; org-agenda file listing
@@ -346,10 +348,7 @@
 ;;
 ;; add encrypted files to agenda files
 ;;
-(after! org-agenda
-  (setq org-agenda-include-diary t)
-
-  (lockbox/refresh-notes-org-gpg))
+(after! org-agenda  (lockbox/refresh-notes-org-gpg))
 
 
 ;;
@@ -415,3 +414,24 @@
                (lambda ()
                  (when (equal org-state "DONE")
                    (my/org-roam-copy-todo-to-today)))))
+;;
+;; rss config
+;;
+(after! elfeed
+  ;; elfeed db gets stored in notes
+  (setq elfeed-db-directory (concat (file-name-as-directory org-directory) "elfeed"))
+  ;; by default show unreads from past while and the not insanely high volume stuff
+  (setq elfeed-search-filter "@6-month-ago +unread -arxiv -tux")
+  ;; update when the elfeed buffer is opened
+  (add-hook! 'elfeed-search-mode-hook #'elfeed-update))
+
+;;
+;; github copilot
+;; NOTE: per-repo disable is handled in `.dir-locals.el'
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
