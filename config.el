@@ -227,21 +227,9 @@
   ;; custom org-capture templates
   (setq org-capture-templates
         '(
-          ("j" "Work Log Entry"
-           entry (file+datetree "~/d/notes/work-log.org.gpg")
-           "* %?"
-           :empty-lines 0)
-          ("n" "Note"
-           entry (file+headline "~/d/notes/notes.org.gpg" "Notes")
-           "** %?"
-           :empty-lines 0)
-          ("g" "General To-Do"
+          ("t" "Todo"
            entry (file+headline "~/d/notes/todo.org.gpg" "Tasks")
            "* TODO [#B] %?\n:Created: %T\n "
-           :empty-lines 0)
-          ("c" "Code To-Do"
-           entry (file+headline "~/d/notes/todo.org.gpg" "Code Related Tasks")
-           "* TODO [#B] %?\n:Created: %T\n%i\n%a\nProposed Solution: "
            :empty-lines 0)
           ("m" "Meeting"
            entry (file+datetree "~/d/notes/meetings.org.gpg")
@@ -313,8 +301,9 @@
            :clock-resume t
            :empty-lines 0
            :unnarrowed t)
-          ("t" "todo" entry "* TODO [#B] %?\n:Created: %T\n "
-           :target (file+head+olp "todo.org.gpg" "#+title: TODO\n#+category: TODO\n" ("Tasks"))
+          ("r" "TOREAD" entry "** %?"
+           :target (file+head "notes/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+                              "#+TITLE: ${title}\n#+category: ${title}\n%^G\n- tags :: \n- source :: <>\n\n* ${title}\n  ")
            :unnarrowed t)))
   )
 
@@ -388,6 +377,8 @@
 
 
 ;; automatically copy completed tasks to daily log
+;;
+;; Commentary: Not sure this will actually work -- edit: it does not work
 ;; copied from https://systemcrafters.net/build-a-second-brain-in-emacs/5-org-roam-hacks/
 (defun my/org-roam-copy-todo-to-today ()
   (interactive)
