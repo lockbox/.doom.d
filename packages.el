@@ -51,3 +51,6 @@
 (package! numpydoc)
 (package! copilot
   :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
+(package! protobuf-mode
+  :recipe (:host github :repo "protocolbuffers/protobuf"
+           :files ("editors/protobuf-mode.el")))

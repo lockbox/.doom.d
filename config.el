@@ -245,9 +245,14 @@
 ;; org gpg config
 ;;
 (after! org
+  ;; enable org-crypt + magic gpg layer
   (org-crypt-use-before-save-magic)
   (setq org-tags-exclude-from-inheritance '("crypt"))
-  ;; key to use for encryption
+
+  ;; disable company mode in org mode
+  (add-hook! 'org-mode-hook (lambda () (company-mode -1)))
+
+  ;; gpg key to use for encryption
   (setq org-crypt-key "lockbox@struct.foo"))
 
 ;;
