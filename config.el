@@ -29,10 +29,6 @@
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-
 ;; Notes config variables
 (defgroup lockbox/notes-group nil
   "lockbox notes config group."
@@ -112,7 +108,7 @@
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
-(setq doom-theme 'doom-Iosvkem)
+(setq doom-theme 'doom-outrun-electric)
 
 ;; don't display line numbers
 (setq display-line-numbers-type nil)
@@ -357,6 +353,9 @@
 
 ;; add hook to selectively auto-save
 (add-hook 'find-file-hook 'disable-auto-save-for-specific-files)
+
+;; enable docker mode on files ending with `Dockerfile`'
+(add-to-list 'auto-mode-alist '("Dockerfile\\'" . dockerfile-mode))
 
 ;;
 ;; Make cursor show up initally in org-agenda
