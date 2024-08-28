@@ -56,3 +56,6 @@
            :files ("editors/protobuf-mode.el")))
 (package! scad-mode)
 
+(package! emacs-guix :recipe (:host nil
+                              :repo "https://git.savannah.gnu.org/git/guix/emacs-guix.git"
+                              :files ("elisp/*.el")))

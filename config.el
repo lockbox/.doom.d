@@ -108,7 +108,13 @@
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
-(setq doom-theme 'doom-outrun-electric)
+                                        ;(setq doom-theme 'doom-outrun-electric)
+(setq doom-theme 'doom-material-dark) ;ayu-dark)
+;; TODO: add tomorrow-night-bright: https://github.com/ChrisKempson/Tomorrow-Theme
+
+(global-hl-line-mode +1)
+(show-paren-mode 1)
+(setq show-paren-delay 0)
 
 ;; don't display line numbers
 (setq display-line-numbers-type nil)
@@ -139,58 +145,6 @@
 (after! numpydoc
   (map! "C-c C-n" #'numpydoc-generate))
 (setq numpydoc-insert-examples-block nil)
-
-;; jump to matching paren / bracket
-;; copied from https://zzamboni.org/post/my-doom-emacs-configuration-with-commentary/
-(after! smartparens
-  (defun zz/goto-match-paren (arg)
-    "Go to the matching paren/bracket, otherwise (or if ARG is not
-    nil) insert %.  vi style of % jumping to matching brace."
-    (interactive "p")
-    (if (not (memq last-command '(set-mark
-                                  cua-set-mark
-                                  zz/goto-match-paren
-                                  down-list
-                                  up-list
-                                  end-of-defun
-                                  beginning-of-defun
-                                  backward-sexp
-                                  forward-sexp
-                                  backward-up-list
-                                  forward-paragraph
-                                  backward-paragraph
-                                  end-of-buffer
-                                  beginning-of-buffer
-                                  backward-word
-                                  forward-word
-                                  mwheel-scroll
-                                  backward-word
-                                  forward-word
-                                  mouse-start-secondary
-                                  mouse-yank-secondary
-                                  mouse-secondary-save-then-kill
-                                  move-end-of-line
-                                  move-beginning-of-line
-                                  backward-char
-                                  forward-char
-                                  scroll-up
-                                  scroll-down
-                                  scroll-left
-                                  scroll-right
-                                  mouse-set-point
-                                  next-buffer
-                                  previous-buffer
-                                  previous-line
-                                  next-line
-                                  back-to-indentation
-                                  doom/backward-to-bol-or-indent
-                                  doom/forward-to-last-non-comment-or-eol
-                                  )))
-        (self-insert-command (or arg 1))
-      (cond ((looking-at "\\s\(") (sp-forward-sexp) (backward-char 1))
-            ((looking-at "\\s\)") (forward-char 1) (sp-backward-sexp))
-            (t (self-insert-command (or arg 1))))))
-  (map! "%" 'zz/goto-match-paren))
 
 ;;
 ;; org config, largely copied from <https://github.com/james-stoup/emacs-org-mode-tutorial>
@@ -429,4 +383,13 @@
               ("<tab>" . 'copilot-accept-completion)
               ("TAB" . 'copilot-accept-completion)
               ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+              ("C-<tab>" . 'copilot-accept-completion-by-word)
+              ("C-n" . 'copilot-next-completion)
+              ("C-p" . 'copilot-previous-completion))
+
+  :config
+  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
