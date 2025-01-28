@@ -364,6 +364,23 @@
                  (when (equal org-state "DONE")
                    (my/org-roam-copy-todo-to-today)))))
 ;;
+;; lsp
+;;
+(after! lsp-mode
+  (setq lsp-file-watch-threshold 5000
+        lsp-headerline-breadcrumb-enable t)
+  (dolist (dir '("[/\\\\]target"
+                 "[/\\\\]docs/build"))
+    (push dir lsp-file-watch-ignored-directories)))
+
+(after! lsp-ui
+  (setq lsp-ui-peek-enable t
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-max-height 45
+        lsp-ui-doc-max-width 100
+        lsp-ui-doc-enable t))
+
+;;
 ;; rss config
 ;;
 (after! elfeed
@@ -377,19 +394,19 @@
 ;;
 ;; github copilot
 ;; NOTE: per-repo disable is handled in `.dir-locals.el'
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)
-              ("C-n" . 'copilot-next-completion)
-              ("C-p" . 'copilot-previous-completion))
-
-  :config
-  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
-  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
+;;(use-package! copilot
+;;  :hook (prog-mode . copilot-mode)
+;;  :bind (:map copilot-completion-map
+;;              ("<tab>" . 'copilot-accept-completion)
+;;              ("TAB" . 'copilot-accept-completion)
+;;              ("C-TAB" . 'copilot-accept-completion-by-word)
+;;              ("C-<tab>" . 'copilot-accept-completion-by-word)
+;;              ("C-n" . 'copilot-next-completion)
+;;              ("C-p" . 'copilot-previous-completion))
+;;
+;;  :config
+;;  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
+;;  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
+;;  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
+;;  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
+;;  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
