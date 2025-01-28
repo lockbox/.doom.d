@@ -49,8 +49,8 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;;(unpin! t)
 (package! numpydoc)
-(package! copilot
-  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
+;;(package! copilot
+;;  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
 (package! protobuf-mode
   :recipe (:host github :repo "protocolbuffers/protobuf"
            :files ("editors/protobuf-mode.el")))
