@@ -132,7 +132,7 @@
 (windmove-default-keybindings)
 
 ;; Prevents some cases of Emacs flickering.
-(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+;;(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
 ;; wordcount in markdown, gfm and org mode
 (setq doom-modeline-enable-word-count t)
@@ -195,6 +195,8 @@
 ;; org gpg config
 ;;
 (after! org
+  ;; path to gpg bin to use
+  (setq epg-program "~/.guix-home/profile/bin/gpg")
   ;; enable org-crypt + magic gpg layer
   (org-crypt-use-before-save-magic)
   (setq org-tags-exclude-from-inheritance '("crypt"))
