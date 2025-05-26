@@ -63,7 +63,13 @@
              lockbox/notes-projects-dir
              lockbox/notes-comms-dir)))
 
-
+;; only define `hash-table-contains-p' if it isn't already present
+(unless (fboundp 'hash-table-contains-p)
+  (defsubst hash-table-contains-p (key table)
+    "Return non-nil if TABLE has an element with KEY."
+    (declare (side-effect-free t))
+    (let ((missing '#:missing))
+      (not (eq (gethash key table missing) missing)))))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -393,22 +399,24 @@
   ;; update when the elfeed buffer is opened
   (add-hook! 'elfeed-search-mode-hook #'elfeed-update))
 
+(use-package! arei)
+
 ;;
 ;; github copilot
-;; NOTE: per-repo disable is handled in `.dir-locals.el'
-;;(use-package! copilot
-;;  :hook (prog-mode . copilot-mode)
-;;  :bind (:map copilot-completion-map
-;;              ("<tab>" . 'copilot-accept-completion)
-;;              ("TAB" . 'copilot-accept-completion)
-;;              ("C-TAB" . 'copilot-accept-completion-by-word)
-;;              ("C-<tab>" . 'copilot-accept-completion-by-word)
-;;              ("C-n" . 'copilot-next-completion)
-;;              ("C-p" . 'copilot-previous-completion))
-;;
-;;  :config
-;;  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
-;;  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
-;;  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
-;;  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
-;;  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)
+              ("C-n" . 'copilot-next-completion)
+              ("C-p" . 'copilot-previous-completion))
+
+  :config
+  (add-to-list 'copilot-indentation-alist '(prog-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(org-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(text-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(closure-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(scheme-mode . 2))
+  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode . 2)))

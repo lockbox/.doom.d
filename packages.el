@@ -49,13 +49,17 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;;(unpin! t)
 (package! numpydoc)
-;;(package! copilot
-;;  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
+(package! copilot
+  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el")))
 (package! protobuf-mode
   :recipe (:host github :repo "protocolbuffers/protobuf"
            :files ("editors/protobuf-mode.el")))
 (package! scad-mode)
 
+(package! arei :recipe (:host nil
+                             :repo "https://git.sr.ht/~abcdw/emacs-arei"
+                             :files ("*.el")))
+
 (package! emacs-guix :recipe (:host nil
-                              :repo "https://git.savannah.gnu.org/git/guix/emacs-guix.git"
+                              :repo "https://git.guix.gnu.org/git/guix/emacs-guix.git"
                               :files ("elisp/*.el")))
