@@ -251,11 +251,11 @@
 
   (setq org-roam-capture-templates
         '(("n" "note" entry "** %?"
-           :target (file+head "notes/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+           :target (file+head "notes/%<%Y%m%d%H%M%S>-${id}.org.gpg"
                               "#+TITLE: ${title}\n#+category: ${title}\n:note:%^G \n")
            :unnarrowed t)
           ("p" "project" plain (file "~/.doom.d/templates/project_template.org")
-           :target (file+head "projects/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+           :target (file+head "projects/%<%Y%m%d%H%M%S>-${id}.org.gpg"
                               "#+title: ${title}\n#+category: ${title}\n#+filetags: project")
            :unnarrowed t)
           ("m" "meeting" entry "* %? :meeting:%^G \n:Created: %T\n** Attendees\n*** \n** Notes\n** Action Items\n*** TODO [#A] "
@@ -265,7 +265,7 @@
            :empty-lines 0
            :unnarrowed t)
           ("r" "TOREAD" entry "** %?"
-           :target (file+head "notes/%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+           :target (file+head "notes/%<%Y%m%d%H%M%S>-${id}.org.gpg"
                               "#+TITLE: ${title}\n#+category: ${title}\n%^G\n- tags :: \n- source :: <>\n\n* ${title}\n  ")
            :unnarrowed t)))
   )
